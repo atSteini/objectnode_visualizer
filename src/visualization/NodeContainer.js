@@ -1,10 +1,8 @@
 import React from 'react';
 import Node from './Node.js';
 
-export default function NodeContainer({nodes}) {
-    return (
-      nodes.map(node => {
-          return <Node key={node} node={node} />
-      })
-    );
+export default function NodeContainer({parentNodes}) {
+    return parentNodes.map(node => {
+        return <Node key={node.id} node={node}/>;
+    });
 }
