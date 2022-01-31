@@ -1,69 +1,88 @@
 import React, {useState, useEffect} from "react";
 import NodeContainer from './visualization/NodeContainer';
+import NavbarComponent from './NavbarComponent';
 import NodeObject from './object/NodeObject';
+import DisplaySettings from './object/DisplaySettings';
 
 /* Bootstrap */
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
-import NavbarComponent from "./NavbarComponent";
 
 const LOCAL_STORAGE_NODES_KEY = 'nodeVisualizer.nodes';
 
 function App() {
     const [parentNodes, setParentNodes] = useState([]);
 
-    async function setToTestData() {
-        setParentNodes([new NodeObject(
-            'PlantCare Sprint 01-28',
+    function setToTestData() {
+        let newNodes = [new NodeObject(
+            'PlantCare Sprint 7',
+            new DisplaySettings("bg-white"),
             [
                 new NodeObject(
                     'Backend',
+                    new DisplaySettings("bg-lightPurple", "text-dark"),
                     [
                         new NodeObject(
                             'User Management',
+                            new DisplaySettings("bg-lightOrange", "text-dark"),
                             [
-                                new NodeObject('Test User Management Issue 1', null, 1111),
-                                new NodeObject('Test User Management Issue 2', null, 1112)
-                            ],
-                            111
+                                new NodeObject('User Login via Angular')
+                            ]
                         ),
                         new NodeObject(
-                            'Database',
+                            'Datenauswertung',
+                            new DisplaySettings("bg-lightOrange", "text-dark"),
                             [
-                                new NodeObject('Test Database Issue 1', null, 1121),
-                                new NodeObject('Test Database Issue 2', null, 1122)
-                            ], 112
+                                new NodeObject('Automatisierung API-Download')
+                            ]
                         )
-                    ],
-                    11
+                    ]
                 ),
                 new NodeObject(
                     'Frontend',
+                    new DisplaySettings("bg-lightPurple", "text-dark"),
                     [
                         new NodeObject(
                             'Bugs',
+                            new DisplaySettings("bg-lightOrange", "text-dark"),
                             [
-                                new NodeObject('Test Bugs Issue 1', null, 1211),
-                                new NodeObject('Test Bugs Issue 2', null, 1212)
+                                new NodeObject('RouterLink auf Details PopUp'),
+                                new NodeObject('SideBar Routing')
                             ],
                             121
                         ),
                         new NodeObject(
-                            'Home',
+                            'Wichtiges über Pflanzen',
+                            new DisplaySettings("bg-lightOrange", "text-dark"),
                             [
-                                new NodeObject('Test Home Issue 1', null, 1221),
-                                new NodeObject('Test Home Issue 2', null, 1222)
-                            ],
-                            122
+                                new NodeObject('Home Ansicht')
+                            ]
+                        ),
+                        new NodeObject(
+                            'Reporte drucken',
+                            new DisplaySettings("bg-lightOrange", "text-dark"),
+                            [
+                                new NodeObject('Druckeransicht Recherche'),
+                                new NodeObject('Druckeransicht Implementierung')
+                            ]
+                        ),
+                        new NodeObject(
+                            'Sensoren Seite',
+                            new DisplaySettings("bg-lightOrange", "text-dark"),
+                            [
+                                new NodeObject('Pflanzen Details')
+                            ]
                         )
-                    ],
-                    12
+                    ]
                 )
-            ],
-            1
-        )]);
+            ]
+        )];
+
+        newNodes.forEach(parent => parent.setChildProperties());
+
+        setParentNodes(newNodes);
     }
 
     function printTree() {
@@ -88,6 +107,62 @@ function App() {
         setParentNodes([]);
     }
 
+    function setChild(child) {
+        if (child.id === null || child.id === undefined) {
+            return;
+        }
+
+        let newNodes = [];
+
+        for (let parent of parentNodes) {
+            parent = NodeObject.from(parent);
+
+            if (parent.id === child.id) {
+                newNodes.push(child);
+
+                continue;
+            }
+
+            parent.setChild(child);
+
+            newNodes.push(parent);
+        }
+
+        setParentNodes(newNodes);
+    }
+
+    function getChildById(id) {
+        for (let parent of parentNodes) {
+            parent = NodeObject.from(parent);
+
+            if (parent.id === id) {
+                return parent;
+            }
+
+            let byId = parent.getChildById(id);
+
+            if (byId !== null && byId !== undefined) {
+                return byId;
+            }
+        }
+
+        return null;
+    }
+
+    function toggleShotMode() {
+        let screenShotMode = parentNodes[0].displaySettings.showEllipsis;
+
+        let newNodes = [];
+
+        for (let parent of parentNodes) {
+            let newParent = NodeObject.from(parent);
+            newParent.setAllShowEllipsis(!screenShotMode);
+            newNodes.push(newParent);
+        }
+
+        setParentNodes(newNodes);
+    }
+
     return (
         <div className="bg-white">
             <NavbarComponent/>
@@ -101,6 +176,9 @@ function App() {
                     </Col>
                     <Col>
                         <Button onClick={clearNodes}>Clear Web Storage</Button>
+                    </Col>
+                    <Col>
+                        <Button onClick={toggleShotMode}>Toggle Screenshot-Mode</Button>
                     </Col>
                 </Row>
                 <Row>
